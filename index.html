@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גלריית סגנונות בינה מלאכותית</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-dark: #003366;
+            --primary-blue: #004a94;
+            --accent-orange: #ED6C44;
+            --bg-light-blue: #F2F7FB;
+        }
+
+        body {
+            background-color: #fcfcfc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        }
+
+        .image-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            aspect-ratio: 1 / 1;
+            background-color: #eee;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .style-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 51, 102, 0.9);
+            color: white;
+            padding: 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+            text-align: center;
+        }
+
+        .image-card:hover .style-overlay {
+            transform: translateY(0);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent-orange);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="header-gradient p-8 rounded-2xl shadow-lg mb-10 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">הנחיה ויזואלית: כוחו של הסגנון</h1>
+            <p class="text-white/90 text-lg max-w-2xl mx-auto">
+                אותו פרומפט בסיסי יכול להניב תוצרים שונים לחלוטין בהתאם להגדרת הסגנון. 
+                עברו עם העכבר על התמונות כדי לגלות את הסגנון ששימש ליצירתן.
+            </p>
+        </header>
+
+        <!-- Gallery Grid -->
+        <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards will be injected here -->
+        </div>
+
+        <!-- Footer Note -->
+        <div class="mt-12 p-6 bg-[#FDF2F0] border-r-4 border-[#ED6C44] rounded-lg">
+            <p class="font-semibold text-gray-800">
+                שימו לב: כל התמונות בגלריה זו נוצרו על ידי בינה מלאכותית (Imagen 4.0) על בסיס הנחיה זהה ששונתה רק בסיומת הסגנון שלה.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; // Provided at runtime
+        const basePrompt = "A professional university professor with glasses and a friendly expression, teaching students in a modern classroom, lecturer standing near a green chalkboard, medium shot";
+
+        const styles = [
+            { he: "צילום ריאליסטי", en: "Realistic Photo", promptSuffix: ", high-quality photograph, realistic lighting, 4k, cinematic" },
+            { he: "סגנון קומיקס", en: "Comic Book Style", promptSuffix: ", vibrant comic book illustration, bold lines, ink outlines, halftone patterns" },
+            { he: "ציור שמן מהמאה ה-17", en: "17th Century Oil Painting", promptSuffix: ", classic oil painting style, dramatic chiaroscuro, baroque art, visible brushstrokes" },
+            { he: "אמנות פיקסלים", en: "Pixel Art Style", promptSuffix: ", 16-bit retro pixel art, clean sprites, videogame aesthetic" },
+            { he: "איור בעיפרון", en: "Pencil Sketch", promptSuffix: ", detailed graphite pencil drawing, hand-drawn sketch on paper, hatching and shading" },
+            { he: "סגנון סייברפאנק", en: "Cyberpunk Aesthetic", promptSuffix: ", futuristic neon lighting, synthwave style, high-tech classroom, glowing highlights" },
+            { he: "סגנון תלת-ממד", en: "3D Animation Style", promptSuffix: ", stylized 3D render, Pixar style animation, smooth textures, expressive character" },
+            { he: "ציור בצבעי מים", en: "Watercolor Painting", promptSuffix: ", soft watercolor textures, artistic paint bleeds, paper texture, delicate washes" },
+            { he: "סגנון ואן גוך", en: "Impressionist Style (Van Gogh)", promptSuffix: ", post-impressionism, swirling brushstrokes, vibrant thick impasto, artistic expression" }
+        ];
+
+        async function fetchImageWithRetry(prompt, retries = 5, delay = 1000) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+            const payload = {
+                instances: [{ prompt: prompt }],
+                parameters: { sampleCount: 1 }
+            };
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error('API Error');
+                    
+                    const data = await response.json();
+                    if (data.predictions && data.predictions[0].bytesBase64Encoded) {
+                        return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    }
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+        }
+
+        function createCard(style, index) {
+            const grid = document.getElementById('gallery-grid');
+            const card = document.createElement('div');
+            card.className = 'image-card skeleton flex items-center justify-center';
+            card.id = `card-${index}`;
+            
+            const loaderContainer = document.createElement('div');
+            loaderContainer.className = 'flex flex-col items-center gap-3 text-gray-500';
+            loaderContainer.innerHTML = '<div class="loader"></div><span class="text-sm font-medium">מייצר תמונה...</span>';
+            card.appendChild(loaderContainer);
+            
+            grid.appendChild(card);
+
+            // Fetch image
+            fetchImageWithRetry(basePrompt + style.promptSuffix)
+                .then(imgUrl => {
+                    card.classList.remove('skeleton');
+                    card.innerHTML = `
+                        <img src="${imgUrl}" alt="${style.he}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/512?text=Error+Loading'">
+                        <div class="style-overlay">
+                            <h3 class="font-bold text-lg">${style.he}</h3>
+                            <p class="text-sm opacity-80">(${style.en})</p>
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    card.classList.remove('skeleton');
+                    card.innerHTML = `<div class="p-4 text-center text-red-600 text-sm">שגיאה בטעינת התמונה.<br>נסו לרענן.</div>`;
+                });
+        }
+
+        window.onload = () => {
+            styles.forEach((style, index) => {
+                createCard(style, index);
+            });
+        };
+    </script>
+</body>
+</html>
