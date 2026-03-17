@@ -14,27 +14,39 @@
         }
 
         body {
-            background-color: #fcfcfc;
+            background-color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1a1a1a;
         }
 
         .header-gradient {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
         }
 
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            margin-top: 4rem;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
         .image-card {
             position: relative;
             overflow: hidden;
-            border-radius: 12px;
+            border-radius: 8px;
             aspect-ratio: 1 / 1;
-            background-color: #eee;
+            background-color: #f3f4f6;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
         .image-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
         }
 
         .style-overlay {
@@ -42,24 +54,36 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 51, 102, 0.9);
+            background: rgba(0, 51, 102, 0.88);
             color: white;
-            padding: 15px;
+            padding: 12px;
             transform: translateY(100%);
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .image-card:hover .style-overlay {
             transform: translateY(0);
         }
 
+        .overlay-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .overlay-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent-orange);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent-orange);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             animation: spin 1s linear infinite;
         }
 
@@ -69,7 +93,7 @@
         }
 
         .skeleton {
-            background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
         }
@@ -80,111 +104,177 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
     <div class="max-w-6xl mx-auto">
-        <!-- Header -->
-        <header class="header-gradient p-8 rounded-2xl shadow-lg mb-10 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">הנחיה ויזואלית: כוחו של הסגנון</h1>
-            <p class="text-white/90 text-lg max-w-2xl mx-auto">
-                אותו פרומפט בסיסי יכול להניב תוצרים שונים לחלוטין בהתאם להגדרת הסגנון. 
-                עברו עם העכבר על התמונות כדי לגלות את הסגנון ששימש ליצירתן.
+        <header class="header-gradient p-12 rounded-3xl shadow-xl mb-12 text-center text-white">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-6">הנחיה ויזואלית: כוחו של הסגנון</h1>
+            <p class="text-blue-50 text-lg max-w-3xl mx-auto leading-relaxed">
+                אותו פרומפט בסיסי יכול להניב תוצרים שונים לחלוטין. 
+                <br class="hidden md:block">
+                <strong>עברו עם העכבר על התמונות</strong> כדי לגלות את הסגנון, המצלמה או התאורה ששימשו ליצירתן.
             </p>
         </header>
 
-        <!-- Gallery Grid -->
-        <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Cards will be injected here -->
-        </div>
+        <div id="gallery-container"></div>
 
-        <!-- Footer Note -->
-        <div class="mt-12 p-6 bg-[#FDF2F0] border-r-4 border-[#ED6C44] rounded-lg">
-            <p class="font-semibold text-gray-800">
-                שימו לב: כל התמונות בגלריה זו נוצרו על ידי בינה מלאכותית (Imagen 4.0) על בסיס הנחיה זהה ששונתה רק בסיומת הסגנון שלה.
+        <div class="mt-20 p-8 bg-blue-50 border-r-8 border-blue-600 rounded-2xl shadow-sm">
+            <p class="font-bold text-blue-900 text-xl mb-3">מידע טכני:</p>
+            <p class="text-blue-800 leading-relaxed">
+                הגלריה מציגה תוצרי בינה מלאכותית (Imagen 3.0) שנוצרו בזמן אמת. בכל קטגוריה, ה-Prompt הבסיסי נותר זהה, בעוד שרק פרמטר סגנוני אחד שונה בכל פעם כדי להדגים את השפעתו על התוצר הסופי.
             </p>
         </div>
     </div>
 
     <script>
-        const apiKey = "AIzaSyCyFSynbCzWjzFi6MMsqkJ2jEDm9CHV8t8"; // Provided at runtime
-        const basePrompt = "A professional university professor with glasses and a friendly expression, teaching students in a modern classroom, lecturer standing near a green chalkboard, medium shot";
+        // הדביקי את המפתח שלך כאן
+        const apiKey = "AIzaSyCyFSynbCzWjzFi6MMsqkJ2jEDm9CHV8t8"; 
 
-        const styles = [
-            { he: "צילום ריאליסטי", en: "Realistic Photo", promptSuffix: ", high-quality photograph, realistic lighting, 4k, cinematic" },
-            { he: "סגנון קומיקס", en: "Comic Book Style", promptSuffix: ", vibrant comic book illustration, bold lines, ink outlines, halftone patterns" },
-            { he: "ציור שמן מהמאה ה-17", en: "17th Century Oil Painting", promptSuffix: ", classic oil painting style, dramatic chiaroscuro, baroque art, visible brushstrokes" },
-            { he: "אמנות פיקסלים", en: "Pixel Art Style", promptSuffix: ", 16-bit retro pixel art, clean sprites, videogame aesthetic" },
-            { he: "איור בעיפרון", en: "Pencil Sketch", promptSuffix: ", detailed graphite pencil drawing, hand-drawn sketch on paper, hatching and shading" },
-            { he: "סגנון סייברפאנק", en: "Cyberpunk Aesthetic", promptSuffix: ", futuristic neon lighting, synthwave style, high-tech classroom, glowing highlights" },
-            { he: "סגנון תלת-ממד", en: "3D Animation Style", promptSuffix: ", stylized 3D render, Pixar style animation, smooth textures, expressive character" },
-            { he: "ציור בצבעי מים", en: "Watercolor Painting", promptSuffix: ", soft watercolor textures, artistic paint bleeds, paper texture, delicate washes" },
-            { he: "סגנון ואן גוך", en: "Impressionist Style (Van Gogh)", promptSuffix: ", post-impressionism, swirling brushstrokes, vibrant thick impasto, artistic expression" }
+        const galleryData = [
+            {
+                title: "גלריית סגנון גרפי",
+                basePrompt: "A professional university professor with glasses and a friendly expression, teaching students in a modern classroom, medium shot, chalkboard in background",
+                items: [
+                    { he: "צילום ריאליסטי", en: "Realistic", suffix: ", high-quality photograph, realistic lighting, 8k resolution, cinematic" },
+                    { he: "קומיקס", en: "Comic Style", suffix: ", vibrant comic book illustration, bold black ink outlines, flat colors" },
+                    { he: "ציור מהמאה ה-17", en: "17th Century Painting", suffix: ", 17th century oil painting, baroque style, masterwork, dramatic chiaroscuro, Rembrandt lighting, visible brushstrokes" }
+                ]
+            },
+            {
+                title: "גלריית סוגי מצלמות",
+                basePrompt: "A group of young friends sitting on a blanket in a sunny park, laughing and talking, trees in the background",
+                items: [
+                    { he: "מצלמת פילם (35mm)", en: "35mm", suffix: ", shot on 35mm film, vintage photography, film grain, natural tones" },
+                    { he: "מצלמה חד-פעמית (Toy camera)", en: "Toy camera", suffix: ", disposable camera look, lo-fi, light leaks, saturated colors" },
+                    { he: "מצלמת פולארויד (Polaroid Camera)", en: "Polaroid Camera", suffix: ", vintage polaroid photo, square format, faded colors, soft focus" },
+                    { he: "מצלמת DSLR", en: "DSLR", suffix: ", professional digital photography, high clarity, sharp focus, modern lens" }
+                ]
+            },
+            {
+                title: "גלריית תאורה",
+                basePrompt: "A beautiful bowl of various fruits like grapes, oranges, and bananas on a stone table",
+                items: [
+                    { he: "תאורת אולפן רכה (Soft light)", en: "light", suffix: ", professional softbox studio lighting, diffused shadows, soft look" },
+                    { he: "תאורת ניאון חזקה (Hard Light)", en: "Hard Light", suffix: ", direct neon lighting, sharp harsh shadows, dramatic contrast" },
+                    { he: "אור טבעי מהצד (direct sunlight)", en: "sunlight", suffix: ", morning sunlight coming from a side window, natural beams, warm glow" },
+                    { he: "תאורה דרמטית (dramatic hard light)", en: "dramatic hard light", suffix: ", high-key drama lighting, deep shadows, spotlight effect" }
+                ]
+            },
+            {
+                title: "גלריית זוויות צילום",
+                basePrompt: "A soccer player kicking a ball on a green field during a match",
+                items: [
+                    { he: "מבט על (Top shot)", en: "Top shot", suffix: ", bird's eye view, looking straight down from the sky" },
+                    { he: "גובה עיניים (Eye level)", en: "Eye level", suffix: ", standard perspective, shot from the eye level of a person" },
+                    { he: "זווית גבוהה (High angle)", en: "angle", suffix: ", high angle shot, looking down at the player" },
+                    { he: "זווית נמוכה (Worm's-eye view)", en: "Worm's-eye view", suffix: ", extremely low angle, looking up from the ground level" }
+                ]
+            },
+            {
+                title: "גלריית קומפוזיציה",
+                items: [
+                    { he: "חוק השלישים (Rule of Thirds)", en: "Thirds", prompt: "A small green plant on a shelf near a window, dramatic light, rule of thirds composition, professional photography" },
+                    { he: "סימטרי, מרכזי (Centered Symmetry)", en: "Symmetry", prompt: "Centered symmetrical shot of a single plant and books on a minimalist white shelf" },
+                    { he: "חלל ריק (Negative Space)", en: "Space", prompt: "A minimalist modern house silhouette at sunset against a vast empty orange sky, negative space" },
+                    { he: "גריד חוזרני (Grid composition)", en: "composition", prompt: "Repeating patterns of many colorful books on a library bookshelf, grid composition" }
+                ]
+            }
         ];
 
-        async function fetchImageWithRetry(prompt, retries = 5, delay = 1000) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-            const payload = {
-                instances: [{ prompt: prompt }],
-                parameters: { sampleCount: 1 }
-            };
-
+        async function fetchImage(prompt, retries = 5) {
+            // ננסה את מודל ה-Fast כי הוא יותר זמין בחשבונות שרק הופעלו
+            const modelName = "imagen-3.0-fast-generate-001";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict?key=${apiKey}`;
+            
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify({
+                            instances: [{ prompt: prompt }],
+                            parameters: { sampleCount: 1 }
+                        })
                     });
-                    
-                    if (!response.ok) throw new Error('API Error');
-                    
+
                     const data = await response.json();
-                    if (data.predictions && data.predictions[0].bytesBase64Encoded) {
+                    if (response.ok && data.predictions && data.predictions[0].bytesBase64Encoded) {
                         return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
                     }
-                } catch (error) {
-                    if (i === retries - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                    
+                    if (data.error) {
+                        console.error(`Error for prompt "${prompt}":`, data.error);
+                        // אם זו שגיאת 404, סימן שהמודל לא קיים בחשבון - ננסה את המודל הרגיל
+                        if (data.error.code === 404 && modelName.includes('fast')) {
+                             return await fetchImageWithStandardModel(prompt);
+                        }
+                        throw data.error;
+                    }
+                } catch (err) {
+                    if (i === retries - 1) return { error: err.message || "Unknown Error" };
+                    await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000));
                 }
             }
         }
 
-        function createCard(style, index) {
-            const grid = document.getElementById('gallery-grid');
-            const card = document.createElement('div');
-            card.className = 'image-card skeleton flex items-center justify-center';
-            card.id = `card-${index}`;
-            
-            const loaderContainer = document.createElement('div');
-            loaderContainer.className = 'flex flex-col items-center gap-3 text-gray-500';
-            loaderContainer.innerHTML = '<div class="loader"></div><span class="text-sm font-medium">מייצר תמונה...</span>';
-            card.appendChild(loaderContainer);
-            
-            grid.appendChild(card);
-
-            // Fetch image
-            fetchImageWithRetry(basePrompt + style.promptSuffix)
-                .then(imgUrl => {
-                    card.classList.remove('skeleton');
-                    card.innerHTML = `
-                        <img src="${imgUrl}" alt="${style.he}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/512?text=Error+Loading'">
-                        <div class="style-overlay">
-                            <h3 class="font-bold text-lg">${style.he}</h3>
-                            <p class="text-sm opacity-80">(${style.en})</p>
-                        </div>
-                    `;
-                })
-                .catch(err => {
-                    card.classList.remove('skeleton');
-                    card.innerHTML = `<div class="p-4 text-center text-red-600 text-sm">שגיאה בטעינת התמונה.<br>נסו לרענן.</div>`;
+        async function fetchImageWithStandardModel(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ instances: [{ prompt: prompt }], parameters: { sampleCount: 1 } })
                 });
+                const data = await response.json();
+                if (response.ok && data.predictions) return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                return { error: data.error?.message || "Failed standard model" };
+            } catch (e) { return { error: e.message }; }
         }
 
-        window.onload = () => {
-            styles.forEach((style, index) => {
-                createCard(style, index);
+        function initGallery() {
+            const container = document.getElementById('gallery-container');
+            if (!apiKey || apiKey === "my api") {
+                container.innerHTML = '<div class="p-10 text-center bg-yellow-50 border border-yellow-200 rounded-xl">אנא הדביקו את מפתח ה-API שלכם בקוד במקום המילים "my api".</div>';
+                return;
+            }
+            
+            galleryData.forEach((section) => {
+                const h2 = document.createElement('h2');
+                h2.className = 'section-title';
+                h2.innerText = section.title;
+                container.appendChild(h2);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16';
+                container.appendChild(grid);
+
+                section.items.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card skeleton flex items-center justify-center';
+                    card.innerHTML = `<div class="loader"></div>`;
+                    grid.appendChild(card);
+
+                    const finalPrompt = item.prompt || (section.basePrompt + item.suffix);
+
+                    fetchImage(finalPrompt).then(result => {
+                        card.classList.remove('skeleton');
+                        if (result && typeof result === 'string') {
+                            card.innerHTML = `
+                                <img src="${result}" class="w-full h-full object-cover" alt="${item.he}">
+                                <div class="style-overlay">
+                                    <div class="overlay-title">${item.he}</div>
+                                    <div class="overlay-subtitle">(${item.en})</div>
+                                </div>
+                            `;
+                        } else {
+                            card.innerHTML = `<div class="text-red-600 text-[10px] text-center p-2 font-mono break-words">Error: ${result.error || "Failed"}</div>`;
+                        }
+                    });
+                });
             });
-        };
+        }
+
+        window.onload = initGallery;
     </script>
 </body>
 </html>
