@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Prompting: The Power of Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-dark: #003366;
+            --primary-blue: #004a94;
+            --accent-orange: #ED6C44;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1a1a1a;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            margin-top: 4rem;
+            border-right: 6px solid var(--accent-orange);
+            padding-right: 15px;
+        }
+
+        .image-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            aspect-ratio: 1 / 1;
+            background-color: #f3f4f6;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+
+        .style-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 51, 102, 0.9);
+            color: white;
+            padding: 12px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        .image-card:hover .style-overlay {
+            transform: translateY(0);
+        }
+
+        .overlay-text {
+            font-weight: bold;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .loader {
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid var(--accent-orange);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .missing-image-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            text-align: center;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="header-gradient p-10 rounded-3xl shadow-xl mb-12 text-center text-white">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-4">הנחיה ויזואלית: כוחו של הסגנון</h1>
+            <p class="text-blue-50 text-lg max-w-3xl mx-auto leading-relaxed">
+                אותו פרומפט בסיסי יכול להניב תוצרים שונים לחלוטין.
+                <br>
+                <strong>עברו עם העכבר על התמונות</strong> כדי לראות את ההגדרה המדויקת.
+            </p>
+        </header>
+
+        <div id="gallery-container"></div>
+
+        <div class="mt-20 p-8 bg-blue-50 border-r-8 border-blue-600 rounded-2xl shadow-sm">
+            <p class="font-bold text-blue-900 text-xl mb-3">מידע טכני לסטודנטים</p>
+            <p class="text-blue-800 leading-relaxed">
+                הממשק מדגים יצירת תמונות בזמן אמת באמצעות <strong>Imagen 4.0</strong>. הטקסטים והתמונות עודכנו בהתאם למדריך הקורס כדי להציג את ההבדלים המשמעותיים בין סגנונות אמנותיים, זוויות צילום וקומפוזיציה.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // שימו לב: הדביקו את מפתח ה-API שלכם בין המרכאות לפני העלאה למודל
+        const apiKey = ""; 
+        
+        const modelName = "imagen-4.0-generate-001";
+        
+        const galleryData = [
+            {
+                title: "גלריית סגנון גרפי:",
+                basePrompt: "A professional university professor with glasses and a friendly expression, teaching students in a modern classroom, medium shot, chalkboard in background",
+                items: [
+                    { label: "צילום ריאליסטי (Realistic)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%A8%D7%99%D7%90%D7%9C%D7%A1%D7%98%D7%99.png", suffix: ", high-quality photograph, realistic lighting, 8k resolution, cinematic" },
+                    { label: "קומיקס (Comic Style)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%A7%D7%95%D7%9E%D7%99%D7%A7%D7%A1%20(Comic%20Style).png", suffix: ", vibrant comic book illustration, bold black ink outlines, flat colors" },
+                    { label: "ציור מהמאה ה-17 (17th Century Painting)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%A6%D7%99%D7%95%D7%A8%20%D7%9E%D7%94%D7%9E%D7%90%D7%94%20%D7%9417%20(17th%20Century%20Painting).png", suffix: ", 17th century oil painting, baroque style, masterwork, dramatic chiaroscuro, Rembrandt lighting, visible brushstrokes" }
+                ]
+            },
+            {
+                title: "גלריית סוגי מצלמות:",
+                basePrompt: "A group of young friends sitting on a blanket in a sunny park, laughing and talking, trees in the background",
+                items: [
+                    { label: "מצלמת פילם (35mm)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%9E%D7%A6%D7%9C%D7%9E%D7%AA%20%D7%A4%D7%99%D7%9C%D7%9D%20(35mm).png", suffix: ", shot on 35mm film, vintage photography, film grain, natural tones" },
+                    { label: "מצלמה חד-פעמית (Toy camera)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%9E%D7%A6%D7%9C%D7%9E%D7%94%20%D7%97%D7%93-%D7%A4%D7%A2%D7%9E%D7%99%D7%AA%20(Toy%20camera).png", suffix: ", disposable camera look, lo-fi, light leaks, saturated colors" },
+                    { label: "מצלמת פולארויד (Polaroid Camera)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%9E%D7%A6%D7%9C%D7%9E%D7%AA%20%D7%A4%D7%95%D7%9C%D7%90%D7%A8%D7%95%D7%99%D7%93%20(Polaroid%20Camera).png", suffix: ", vintage polaroid photo, square format, faded colors, soft focus" },
+                    { label: "מצלמת DSLR", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%9E%D7%A6%D7%9C%D7%9E%D7%AA%20DSLR.png", suffix: ", professional digital photography, high clarity, sharp focus, modern lens" }
+                ]
+            },
+            {
+                title: "גלריית תאורה:",
+                basePrompt: "A beautiful bowl of various fruits like grapes, oranges, and bananas on a stone table",
+                items: [
+                    { label: "תאורת אולפן רכה (Soft light)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%AA%D7%90%D7%95%D7%A8%D7%AA%20%D7%90%D7%95%D7%9C%D7%A4%D7%9F%20%D7%A8%D7%9B%D7%94%20(Soft%20light).png", suffix: ", professional softbox studio lighting, diffused shadows, soft look" },
+                    { label: "תאורת ניאון חזקה (Hard Light)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%AA%D7%90%D7%95%D7%A8%D7%AA%20%D7%A0%D7%99%D7%90%D7%95%D7%9F%20%D7%97%D7%96%D7%A7%D7%94%20(Hard%20Light).png", suffix: ", direct neon lighting, sharp harsh shadows, dramatic contrast" },
+                    { label: "אור טבעי מהצד (direct sunlight)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%90%D7%95%D7%A8%20%D7%98%D7%91%D7%A2%D7%99%20%D7%9E%D7%94%D7%A6%D7%93%20(direct%20sunlight).png", suffix: ", morning sunlight coming from a side window, natural beams, warm glow" },
+                    { label: "תאורה דרמטית (dramatic hard light)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%AA%D7%90%D7%95%D7%A8%D7%94%20%D7%93%D7%A8%D7%9E%D7%98%D7%99%D7%AA%20(dramatic%20hard%20light).png", suffix: ", high-key drama lighting, deep shadows, spotlight effect" }
+                ]
+            },
+            {
+                title: "גלריית זוויות צילום:",
+                basePrompt: "A soccer player kicking a ball on a green field during a match",
+                items: [
+                    { label: "מבט על (Top shot)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%9E%D7%91%D7%98%20%D7%A2%D7%9C%20(Top%20shot).png", suffix: ", bird's eye view, looking straight down from the sky" },
+                    { label: "גובה עיניים (Eye level)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%92%D7%95%D7%91%D7%94%20%D7%A2%D7%99%D7%A0%D7%99%D7%99%D7%9D%20(Eye%20level).png", suffix: ", standard perspective, shot from the eye level of a person" },
+                    { label: "זווית גבוהה (High angle)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%96%D7%95%D7%95%D7%99%D7%AA%20%D7%92%D7%91%D7%95%D7%94%D7%94%20(High%20angle).png", suffix: ", high angle shot, looking down at the player" },
+                    { label: "זווית נמוכה (Worm's-eye view)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%96%D7%95%D7%95%D7%99%D7%AA%20%D7%A0%D7%9E%D7%95%D7%9B%D7%94%20(Worm%E2%80%99s-eye%20view).png", suffix: ", extremely low angle, looking up from the ground level" }
+                ]
+            },
+            {
+                title: "גלריית קומפוזיציה:",
+                items: [
+                    { label: "חוק השלישים (Rule of Thirds)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%97%D7%95%D7%A7%20%D7%94%D7%A9%D7%9C%D7%99%D7%A9%D7%99%D7%9D%20(Rule%20of%20Thirds).png", prompt: "A small green plant on a wooden shelf near a window, sunlight hitting the plant, rule of thirds composition, professional photography" },
+                    { label: "סימטרי, מרכזי (Centered Symmetry)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%A1%D7%99%D7%9E%D7%98%D7%A8%D7%99,%20%D7%9E%D7%A8%D7%9B%D7%96%D7%99%20(Centered%20Symmetry).png", prompt: "Centered symmetrical shot of a single small plant and books on a minimalist white shelf, direct eye level" },
+                    { label: "חלל ריק (Negative Space)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%97%D7%9C%D7%9C%20%D7%A8%D7%99%D7%A7%20(Negative%20Space).png", prompt: "A minimalist modern building silhouette at sunset against a vast empty orange and blue sky, negative space composition" },
+                    { label: "גריד חוזרני (Grid composition)", staticImage: "https://opal.openu.ac.il/pluginfile.php/8828557/mod_lightboxgallery/gallery_images/0/%D7%92%D7%A8%D7%99%D7%93%20%D7%97%D7%96%D7%A8%D7%AA%D7%99%20(Grid%20composition).png", prompt: "Repeating grid patterns of many colorful books perfectly aligned on a library bookshelf, grid composition" }
+                ]
+            }
+        ];
+
+        async function fetchImageWithRetry(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict?key=${apiKey}`;
+            const payload = {
+                instances: [{ prompt: prompt }],
+                parameters: { sampleCount: 1 }
+            };
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    if (response.ok && data.predictions?.[0]?.bytesBase64Encoded) {
+                        return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                } catch (e) {
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+            }
+            return { error: "שגיאה בטעינה. ודאו שמפתח ה-API תקין." };
+        }
+
+        function init() {
+            const container = document.getElementById('gallery-container');
+
+            galleryData.forEach(section => {
+                const sectionEl = document.createElement('div');
+                
+                const h2 = document.createElement('h2');
+                h2.className = 'section-title';
+                h2.innerText = section.title;
+                sectionEl.appendChild(h2);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12';
+                
+                if (section.items.length === 3) {
+                    grid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 max-w-4xl';
+                }
+
+                sectionEl.appendChild(grid);
+                container.appendChild(sectionEl);
+
+                section.items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+
+                    // קוד טיפול בתמונות סטטיות לעומת ייצור דינמי
+                    if (item.staticImage) {
+                        card.innerHTML = `
+                            <img src="${item.staticImage}" class="w-full h-full object-cover" alt="${item.label}" 
+                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'missing-image-box\\'><span class=\\'font-bold text-sm\\'>התמונה חסומה מחוץ למודל</span><span class=\\'text-xs mt-2\\'>זה יעבוד כשיוטמע בתוך האו&quot;פ</span></div>';">
+                            <div class="style-overlay">
+                                <div class="overlay-text">${item.label}</div>
+                            </div>`;
+                        grid.appendChild(card);
+                    } else {
+                        card.classList.add('skeleton');
+                        card.innerHTML = `<div class="loader"></div>`;
+                        grid.appendChild(card);
+
+                        const finalPrompt = item.prompt || (section.basePrompt + item.suffix);
+                        
+                        fetchImageWithRetry(finalPrompt).then(res => {
+                            card.classList.remove('skeleton');
+                            if (typeof res === 'string') {
+                                card.innerHTML = `
+                                    <img src="${res}" class="w-full h-full object-cover" alt="${item.label}">
+                                    <div class="style-overlay">
+                                        <div class="overlay-text">${item.label}</div>
+                                    </div>`;
+                            } else {
+                                card.innerHTML = `<div class="error-message">${res.error}</div>`;
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
